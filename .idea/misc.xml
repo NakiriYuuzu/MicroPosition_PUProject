@@ -3,17 +3,23 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.327027027027027" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/alert_dialog.xml" value="0.31981981981981983" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/ic_baseline_account_circle_24.xml" value="0.31981981981981983" />
+        <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/ic_baseline_bar_chart_24.xml" value="0.327027027027027" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/ic_baseline_map_24.xml" value="0.31981981981981983" />
+        <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/ic_baseline_view_list_24.xml" value="0.327027027027027" />
+        <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/ic_launcher_background.xml" value="0.327027027027027" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/icon_account.xml" value="0.31981981981981983" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/icon_arrow_left.xml" value="0.31981981981981983" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/icon_arrow_right.xml" value="0.31981981981981983" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/icon_monitor.xml" value="0.31555555555555553" />
+        <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/icon_safety.xml" value="0.327027027027027" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/icon_signout.xml" value="0.31981981981981983" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/item_selector.xml" value="0.31981981981981983" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/rounded_corner.xml" value="0.31981981981981983" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/drawable/rounded_corner_2.xml" value="0.31981981981981983" />
+        <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/layout-small/activity_check.xml" value="0.75" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/layout/activity_check.xml" value="0.30405405405405406" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/layout/activity_guide.xml" value="0.33" />
         <entry key="..\:/AndroidStudio/Pu_Smart_Campus_MicroPositioning_Service/app/src/main/res/layout/activity_guide_spot.xml" value="0.30585585585585584" />

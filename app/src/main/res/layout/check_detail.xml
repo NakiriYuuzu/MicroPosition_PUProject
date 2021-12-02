@@ -28,7 +28,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:layout_marginStart="245dp"
+                android:layout_marginStart="235dp"
                 android:layout_marginTop="15dp"
                 app:cardBackgroundColor="@color/lightBlue"
                 app:cardCornerRadius="15dp"
@@ -70,7 +70,7 @@
                 android:id="@+id/tv_check_recycleView_numPeople"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="70dp"
+                android:layout_marginStart="75dp"
                 android:layout_marginTop="58dp"
                 android:textAlignment="textStart"
                 android:text=""
