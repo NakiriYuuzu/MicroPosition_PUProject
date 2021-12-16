@@ -1,7 +1,5 @@
 package tw.edu.pu.pu_smart_campus_micro_positioning_service.Activity;
 
-import static tw.edu.pu.pu_smart_campus_micro_positioning_service.Beacon.BeaconDefine.*;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -28,9 +26,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.imageview.ShapeableImageView;
 
 import org.altbeacon.beacon.Beacon;
-import org.altbeacon.beacon.BeaconManager;
-import org.altbeacon.beacon.BeaconParser;
-import org.altbeacon.beacon.RangeNotifier;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import tw.edu.pu.pu_smart_campus_micro_positioning_service.ApiConnect.VolleyApi;
+import tw.edu.pu.pu_smart_campus_micro_positioning_service.Beacon.BeaconController;
 import tw.edu.pu.pu_smart_campus_micro_positioning_service.DefaultSetting;
 import tw.edu.pu.pu_smart_campus_micro_positioning_service.R;
 import tw.edu.pu.pu_smart_campus_micro_positioning_service.VariableAndFunction.RequestHelper;
@@ -57,8 +53,8 @@ public class GuideActivity extends AppCompatActivity implements OnMapReadyCallba
 
     private FusedLocationProviderClient client;
     private GoogleMap gMap;
-    private BeaconManager beaconManager;
 
+    private BeaconController beaconController;
     private RequestHelper requestHelper;
     private YuuzuAlertDialog alertDialog;
     private VolleyApi volleyApi;
@@ -76,24 +72,13 @@ public class GuideActivity extends AppCompatActivity implements OnMapReadyCallba
 
         initView();
         requestHelper.requestBluetooth();
+        beaconController.initBeacon();
         buttonInit();
-        beaconInit();
-    }
-
-    private void beaconInit() {
-        beaconManager = BeaconManager.getInstanceForApplication(this);
-
-        //beacon AddStone m:0-3=4c000215 or alt beacon = m:2-3=0215
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
-
-        beaconManager.setForegroundBetweenScanPeriod(DEFAULT_FOREGROUND_BETWEEN_SCAN_PERIOD);
-        beaconManager.setForegroundScanPeriod(DEFAULT_FOREGROUND_SCAN_PERIOD);
     }
 
     private void buttonInit() {
         btnBack.setOnClickListener(v -> {
-            stopScanning();
+            beaconController.stopScanning();
             finish();
         });
     }
@@ -101,6 +86,7 @@ public class GuideActivity extends AppCompatActivity implements OnMapReadyCallba
     private void initView() {
         //findView
         btnBack = findViewById(R.id.btn_Guide_back);
+        beaconController = new BeaconController(this);
         requestHelper = new RequestHelper(this);
         alertDialog = new YuuzuAlertDialog(this);
         shareData = new ShareData(this);
@@ -121,37 +107,22 @@ public class GuideActivity extends AppCompatActivity implements OnMapReadyCallba
     }
 
     private void startScanning() {
-        new Thread(() -> requestHelper.flushBluetooth()).start();
-
         Log.e(TAG, "startScanning...");
+        beaconController.startScanning((beacons, region) -> {
+            if (beacons.size() > 0) {
+                List<Beacon> list = new ArrayList<>();
+                for (Beacon beaconData : beacons) {
+                    if (beaconData.getDistance() <= 15f)
+                        list.add(beaconData);
 
-        RangeNotifier rangeNotifier = (collection, region) -> {
-            if (collection.size() > 0) {
-                List<Beacon> beacons = new ArrayList<>();
-                for (Beacon beaconData : collection) {
-                    if (beaconData.getDistance() <= 15f) {
-                        beacons.add(beaconData);
-                    }
-
-                    if (beacons.size() > 0) {
-
-                        Collections.sort(beacons, (o1, o2) -> Double.compare(o2.getDistance(), o1.getDistance()));
-
-                        Beacon beacon = beacons.get(0);
+                    if (list.size() > 0) {
+                        Collections.sort(list, (o1, o2) -> Double.compare(o2.getDistance(), o1.getDistance()));
+                        Beacon beacon = list.get(0);
                         beaconData(beacon);
                     }
                 }
             }
-        };
-
-        beaconManager.addRangeNotifier(rangeNotifier);
-        beaconManager.startRangingBeacons(REGION_BEACON_01);
-    }
-
-    private void stopScanning() {
-        beaconManager.removeAllMonitorNotifiers();
-        beaconManager.removeAllRangeNotifiers();
-        beaconManager.stopRangingBeacons(REGION_BEACON_01);
+        });
     }
 
     private void beaconData(Beacon beacon) {
@@ -161,7 +132,7 @@ public class GuideActivity extends AppCompatActivity implements OnMapReadyCallba
         String rssi = String.valueOf(beacon.getRssi());
         String distance = String.valueOf(beacon.getDistance());
 
-        Log.e(TAG, major + "\n" + minor + "\n" + txpower + "\n" + rssi + "\n" + distance);
+        Log.e(TAG, major + "\n" + minor + "\n" + txpower + "\n" + rssi + "\n" + distance + "\n" + beacon.getId1());
 
         apiPostData(major, minor, txpower, rssi, distance);
     }
@@ -330,13 +301,13 @@ public class GuideActivity extends AppCompatActivity implements OnMapReadyCallba
     @Override
     protected void onPause() {
         super.onPause();
-        stopScanning();
+        beaconController.stopScanning();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        stopScanning();
+        beaconController.stopScanning();
     }
 
     @Override
@@ -348,7 +319,7 @@ public class GuideActivity extends AppCompatActivity implements OnMapReadyCallba
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopScanning();
+        beaconController.stopScanning();
         apiCloseData();
     }
 }

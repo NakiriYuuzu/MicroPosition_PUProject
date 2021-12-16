@@ -1,6 +1,5 @@
 package tw.edu.pu.pu_smart_campus_micro_positioning_service.Beacon;
 
-import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.Region;
 
 import java.util.HashMap;

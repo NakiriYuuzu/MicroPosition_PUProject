@@ -1,7 +1,5 @@
 package tw.edu.pu.pu_smart_campus_micro_positioning_service.Activity;
 
-import static tw.edu.pu.pu_smart_campus_micro_positioning_service.Beacon.BeaconDefine.*;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
@@ -16,8 +14,6 @@ import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textview.MaterialTextView;
 
 import org.altbeacon.beacon.Beacon;
-import org.altbeacon.beacon.BeaconManager;
-import org.altbeacon.beacon.BeaconParser;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +21,7 @@ import java.util.List;
 import java.util.TimerTask;
 
 import tw.edu.pu.pu_smart_campus_micro_positioning_service.ApiConnect.VolleyApi;
+import tw.edu.pu.pu_smart_campus_micro_positioning_service.Beacon.BeaconController;
 import tw.edu.pu.pu_smart_campus_micro_positioning_service.Beacon.BeaconStore;
 import tw.edu.pu.pu_smart_campus_micro_positioning_service.DefaultSetting;
 import tw.edu.pu.pu_smart_campus_micro_positioning_service.R;
@@ -43,6 +40,7 @@ public class SafetyActivity extends AppCompatActivity {
     private int count_Animation = 0;
     private int count_Api = 0;
     private int count_Alert = 0;
+    private int emergency = 0;
 
     LottieAnimationView animation;
     MaterialTextView btnSafety;
@@ -50,9 +48,9 @@ public class SafetyActivity extends AppCompatActivity {
 
     RequestHelper requestHelper;
     BeaconStore beaconStore;
+    BeaconController beaconController;
     YuuzuAlertDialog alertDialog;
 
-    BeaconManager beaconManager;
     MediaPlayer mediaPlayer;
     AudioManager audioManager;
 
@@ -63,13 +61,16 @@ public class SafetyActivity extends AppCompatActivity {
 
         initView();
         requestHelper.requestBluetooth();
+        beaconController.initBeacon();
         initButton();
-        beaconInit();
     }
 
     private void initButton() {
+
+
         btnBack.setOnClickListener(v -> {
             animationStop();
+            beaconController.stopScanning();
             finish();
         });
 
@@ -79,7 +80,8 @@ public class SafetyActivity extends AppCompatActivity {
                     @Override
                     public void onOkay(DialogInterface dialog, int which) {
                         animationStart();
-                        startScanning(DefaultSetting.API_SAFETY_MONITOR_START);
+                        emergency = 1;
+                        startScanning();
                         dialog.dismiss();
                     }
 
@@ -90,7 +92,7 @@ public class SafetyActivity extends AppCompatActivity {
                 });
 
             } else {
-                stopScanning();
+                beaconController.stopScanning();
                 sos_Stop();
                 animationStop();
                 apiSafetyStop();
@@ -103,8 +105,8 @@ public class SafetyActivity extends AppCompatActivity {
                     alertDialog.showDialog("安全通道SOS", "此功能會直接呼叫警衛室", new YuuzuAlertDialog.AlertCallback() {
                         @Override
                         public void onOkay(DialogInterface dialog, int which) {
-                            stopScanning();
-                            startScanning(DefaultSetting.API_SAFETY_SOS_START);
+                            emergency = 2;
+                            apiChecked = true;
                             sos_Start();
                             dialog.dismiss();
                         }
@@ -116,9 +118,9 @@ public class SafetyActivity extends AppCompatActivity {
                     });
                 } else {
                     sos_Stop();
-                    stopScanning();
                     apiSosStop();
-                    startScanning(DefaultSetting.API_SAFETY_MONITOR_START);
+                    emergency = 1;
+                    apiChecked = true;
                 }
             } else {
                 alertDialog.showDialog("安全通道SOS", "請麻煩先打開安全監控才能打開SOS!", new YuuzuAlertDialog.AlertCallback() {
@@ -144,46 +146,32 @@ public class SafetyActivity extends AppCompatActivity {
 
         btnSafety.setText(R.string.safety_Start);
 
+        beaconController = new BeaconController(this);
+        beaconStore = new BeaconStore(this);
         requestHelper = new RequestHelper(this);
         alertDialog = new YuuzuAlertDialog(this);
     }
 
-    private void beaconInit() {
-        beaconManager = BeaconManager.getInstanceForApplication(this);
-
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
-    }
-
-    private void startScanning(String api) {
-        new Thread(() -> requestHelper.flushBluetooth()).start();
-
-        beaconManager.addRangeNotifier((beaconCollection, region) -> {
-            if (beaconCollection.size() > 0) {
+    private void startScanning() {
+        Log.e(TAG, "StartScanning...");
+        beaconController.startScanning((beacons, region) -> {
+            if (beacons.size() > 0) {
+                Log.e(TAG, "Get Data Successfully!");
                 count_Alert = 0;
                 firstChecked = false;
-                Log.e(TAG, "Success Get data");
-                List<Beacon> beacons = new ArrayList<>();
+                SafetyActivity.this.apiTimer();
 
-                for (Beacon beacon : beaconCollection) {
-                    beacons.add(beacon);
-                }
-
-                if (beacons.size() > 0) {
-                    Collections.sort(beacons, (o1, o2) -> Double.compare(o2.getDistance(), o1.getDistance()));
-
-                    apiTimer();
-
-                    beaconStore = new BeaconStore(SafetyActivity.this, beacons.get(0));
-                    beaconStore.beaconData(apiChecked, api);
-                }
+                List<Beacon> list = new ArrayList<>(beacons);
+                Collections.sort(list, (o1, o2) -> Double.compare(o2.getDistance(), o1.getDistance()));
+                beaconStore.beaconData(apiChecked, list.get(0), sendAPI(emergency));
 
             } else {
-                Log.e(TAG, "NO Beacon here.");
+                Log.e(TAG, "No Beacon Here.");
+
                 if (firstChecked) {
                     Log.e(TAG, "Alert! 此道路暫時不支援安全通道。");
                     count_Animation++;
-                    runOnUiThread(() -> {
+                    SafetyActivity.this.runOnUiThread(() -> {
                         if (count_Animation == 3) {
                             alertDialog.showDialog("安全通道", "此道路暫時不支援安全通道!", new YuuzuAlertDialog.AlertCallback() {
                                 @Override
@@ -196,25 +184,27 @@ public class SafetyActivity extends AppCompatActivity {
                                     dialog.dismiss();
                                 }
                             });
-                            animationStop();
-                            sos_Stop();
+                            SafetyActivity.this.animationStop();
+                            SafetyActivity.this.sos_Stop();
+                            beaconController.stopScanning();
                             count_Animation = 0;
                         }
                     });
 
                 } else {
-                    dialogTimer();
+                    SafetyActivity.this.dialogTimer();
                 }
             }
         });
-
-        beaconManager.startRangingBeacons(REGION_BEACON_01);
     }
 
-    private void stopScanning() {
-        beaconManager.removeAllMonitorNotifiers();
-        beaconManager.stopRangingBeacons(REGION_BEACON_01);
-        beaconManager.removeAllRangeNotifiers();
+    private String sendAPI(int emergency) {
+        String url = "";
+        if (emergency == 1)
+            url = DefaultSetting.API_SAFETY_MONITOR_START;
+        else if (emergency == 2)
+            url = DefaultSetting.API_SAFETY_SOS_START;
+        return url;
     }
 
     private void animationStart() {
@@ -228,8 +218,6 @@ public class SafetyActivity extends AppCompatActivity {
         animation.setProgress(0);
         animation.cancelAnimation();
         btnSafety.setText(R.string.safety_Start);
-
-        stopScanning();
 
         animationRunning = false;
     }
@@ -316,7 +304,7 @@ public class SafetyActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopScanning();
+        beaconController.stopScanning();
         apiSosStop();
         apiSafetyStop();
     }

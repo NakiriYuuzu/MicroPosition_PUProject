@@ -36,9 +36,10 @@ public class Police_MainActivity extends AppCompatActivity {
 
         viewInit();
         initData();
-        requestPermission();
+        requestHelper.requestPermission();
         roleCheck();
         btnInit();
+        requestHelper.flushBluetooth();
     }
 
     private void viewInit() {
@@ -100,24 +101,5 @@ public class Police_MainActivity extends AppCompatActivity {
             shareData.saveTOKEN("");
             finish();
         });
-    }
-
-    private void requestPermission() {
-        if (Build.VERSION.SDK_INT > 23) {
-            PermissionX.init(this)
-                    .permissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
-
-                    .onExplainRequestReason((scope, deniedList) -> scope.showRequestReasonDialog(
-                            deniedList, "Grant Permission!", "Sure", "Cancel"))
-
-                    .request((allGranted, grantedList, deniedList) -> {
-                        if (!allGranted) {
-                            Toast.makeText(getApplicationContext(), "Grant Permission failed!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        } else {
-            Toast.makeText(getApplicationContext(), "您的手機無法使用該應用...", Toast.LENGTH_SHORT).show();
-            finish();
-        }
     }
 }

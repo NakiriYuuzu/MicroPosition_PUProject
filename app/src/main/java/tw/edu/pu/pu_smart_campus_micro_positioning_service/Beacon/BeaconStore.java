@@ -14,58 +14,47 @@ import tw.edu.pu.pu_smart_campus_micro_positioning_service.ApiConnect.VolleyApi;
 import tw.edu.pu.pu_smart_campus_micro_positioning_service.VariableAndFunction.ShareData;
 
 public class BeaconStore {
-    private final String TAG = "beaconStore";
+    private final String TAG = "beaconStore: ";
 
     private final Activity activity;
     private final ShareData shareData;
-    private Beacon o1;
 
     VolleyApi volleyApi;
 
-    public BeaconStore(Activity activity, Beacon o1) {
+    public BeaconStore(Activity activity) {
         this.activity = activity;
-        this.o1 = o1;
         shareData = new ShareData(activity);
     }
 
-    public void beaconData(boolean apiChecked, String apiURL) {
-        // Sending data
+    public void beaconData(Boolean apiChecked, Beacon o1, String apiURL) {
+        Log.e(TAG, o1.toString());
         if (apiChecked) {
-            Log.e(TAG, o1.toString());
-            if (o1 != null) {
-                Log.e(TAG, "data was sent.");
-                volleyApi = new VolleyApi(activity, apiURL);
+            // Sending data
 
-                volleyApi.post_API_Safety_Start(new VolleyApi.VolleyCallback() {
-                    @Override
-                    public void onSuccess(String result) {
-                        Log.e(TAG, result);
-                    }
+            Log.e(TAG, "data was sent.");
+            volleyApi = new VolleyApi(activity, apiURL);
 
-                    @Override
-                    public void onFailed(VolleyError error) {
-                        Log.e(TAG, error.toString());
-                    }
+            volleyApi.post_API_Safety_Start(new VolleyApi.VolleyCallback() {
+                @Override
+                public void onSuccess(String result) {
+                    Log.e(TAG, result);
+                }
 
-                }, () -> {
-                    Map<String, String> params = new HashMap<>();
-                    params.put("uid", shareData.getUID());
-                    params.put("major", o1.getId2().toString());
-                    params.put("minor", o1.getId3().toString());
-                    params.put("txpower", String.valueOf(o1.getTxPower()));
-                    params.put("rssi", String.valueOf(o1.getRssi()));
-                    params.put("distance", String.valueOf(o1.getDistance()));
-                    return params;
-                });
-            }
+                @Override
+                public void onFailed(VolleyError error) {
+                    Log.e(TAG, error.toString());
+                }
+
+            }, () -> {
+                Map<String, String> params = new HashMap<>();
+                params.put("uid", shareData.getUID());
+                params.put("major", o1.getId2().toString());
+                params.put("minor", o1.getId3().toString());
+                params.put("txpower", String.valueOf(o1.getTxPower()));
+                params.put("rssi", String.valueOf(o1.getRssi()));
+                params.put("distance", String.valueOf(o1.getDistance()));
+                return params;
+            });
         }
-    }
-
-    public Beacon getO1() {
-        return o1;
-    }
-
-    public void setO1(Beacon o1) {
-        this.o1 = o1;
     }
 }

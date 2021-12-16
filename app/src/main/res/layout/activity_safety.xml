@@ -62,8 +62,8 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/btn_safety_SOS"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_marginTop="75dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
